@@ -1,4 +1,7 @@
 import ipaddress
+import os
+import select
+from sys import platform
 from wsgiref import validate
 
 class UserDialog(object):
@@ -14,8 +17,6 @@ class UserDialog(object):
             print(f"Enter login credentials for {hostname}")
         else:
             print(f"Enter login credentials for all servers")
-
-        
 
         if self.use_login_password_separately != True:
             while True:
@@ -69,3 +70,32 @@ class UserDialog(object):
                 return ip
             else:
                 print("The IP address is entered incorrectly, try entering it again.")
+
+    def get_subnet_from_user(self):
+        while True:
+            ip = input("Enter the network for scanning (e.g., '192.168.0.1'): ")
+
+            if self.validate_ip(ip):
+                return ip + "/24"
+            else:
+                print("The IP address is entered incorrectly, try entering it again.")
+
+    def clear_console(self):
+        if platform.startswith('win'):
+            os.system('cls')
+        elif platform.startswith('linux') or platform.startswith('darwin'):
+            os.system('clear')
+
+    def server_selection(self, servers):
+        self.clear_console()
+
+        i = 0
+        for server in servers:
+            i += 1
+            print(f"{i}) IP: {server.ip}, Hostname: {server.hostname}")
+
+        select_servers = list(map(int, input("Enter number serwers (e.g., 1,2,3): ").split(',')))
+        for server in select_servers:
+
+
+            print(server)

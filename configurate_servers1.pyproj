@@ -22,6 +22,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="configurate_servers1.py" />
+    <Compile Include="NetworkScanner.py" />
+    <Compile Include="RollbackManager.py" />
     <Compile Include="ServerFileManager.py" />
     <Compile Include="SSHClient.py" />
     <Compile Include="UserDialog.py" />
