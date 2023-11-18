@@ -1,4 +1,4 @@
-import ipaddress
+﻿import ipaddress
 import getpass
 import os
 import select
@@ -141,6 +141,12 @@ class UserDialog(object):
 
     def reboot_server(self):
         if self.check_yes_no("Do you want to reboot all servers? (yes/no): "):
+            return True
+        else:
+            return False
+
+    def retry_connection(self):
+        if self.check_yes_no("Retry the connection to the server? (yes/no): "):
             return True
         else:
             return False

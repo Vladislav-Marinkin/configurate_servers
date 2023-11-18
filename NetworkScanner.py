@@ -1,4 +1,4 @@
-import socket
+﻿import socket
 from scapy.all import ARP, Ether, srp
 
 class NetworkScanner(object):

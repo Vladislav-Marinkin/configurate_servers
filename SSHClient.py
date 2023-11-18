@@ -1,4 +1,4 @@
-from asyncio import SelectorEventLoop
+п»їfrom asyncio import SelectorEventLoop
 from ping3 import ping, verbose_ping
 import paramiko
 import time
@@ -15,65 +15,67 @@ class SSHClient(object):
         self.user_dialog = user_dialog
 
     def connect_to_server(self, ip=None):
-        # Если IP не предоставлен явно, используем IP из экземпляра класса
+        # Р•СЃР»Рё IP РЅРµ РїСЂРµРґРѕСЃС‚Р°РІР»РµРЅ СЏРІРЅРѕ, РёСЃРїРѕР»СЊР·СѓРµРј IP РёР· СЌРєР·РµРјРїР»СЏСЂР° РєР»Р°СЃСЃР°
         if ip is None:
             ip = self.ip
 
-        # Загружаем системные ключи и устанавливаем политику добавления отсутствующих ключей
+        # Р—Р°РіСЂСѓР¶Р°РµРј СЃРёСЃС‚РµРјРЅС‹Рµ РєР»СЋС‡Рё Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕР»РёС‚РёРєСѓ РґРѕР±Р°РІР»РµРЅРёСЏ РѕС‚СЃСѓС‚СЃС‚РІСѓСЋС‰РёС… РєР»СЋС‡РµР№
         self.client.load_system_host_keys()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-        try:
-            # Если включено использование отдельных логина и пароля
-            if self.user_dialog.use_login_password_separately:
-                self.user_dialog.prompt_login_credentials(ip)
+        while True:
+            try:
+                # Р•СЃР»Рё РІРєР»СЋС‡РµРЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РѕС‚РґРµР»СЊРЅС‹С… Р»РѕРіРёРЅР° Рё РїР°СЂРѕР»СЏ
+                if self.user_dialog.use_login_password_separately:
+                    self.user_dialog.prompt_login_credentials(ip)
 
-            # Подключение к серверу
-            if self.user_dialog.key_filename is None:
-                # Подключение с использованием логина и пароля
-                self.client.connect(ip, self.port, self.user_dialog.username, self.user_dialog.password)
-            else:
-                # Подключение с использованием логина и ключа
-                self.client.connect(ip, self.port, username=self.user_dialog.username, key_filename=self.user_dialog.key_filename)
+                # РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє СЃРµСЂРІРµСЂСѓ
+                if self.user_dialog.key_filename is None:
+                    # РџРѕРґРєР»СЋС‡РµРЅРёРµ СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј Р»РѕРіРёРЅР° Рё РїР°СЂРѕР»СЏ
+                    self.client.connect(ip, self.port, self.user_dialog.username, self.user_dialog.password)
+                else:
+                    # РџРѕРґРєР»СЋС‡РµРЅРёРµ СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј Р»РѕРіРёРЅР° Рё РєР»СЋС‡Р°
+                    self.client.connect(ip, self.port, username=self.user_dialog.username, key_filename=self.user_dialog.key_filename)
 
-            # Выводим сообщение об успешном подключении
-            print(f"Connected to server {self.ip}")
+                # Р’С‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± СѓСЃРїРµС€РЅРѕРј РїРѕРґРєР»СЋС‡РµРЅРёРё
+                print(f"Connected to server {self.ip}")
 
-            # Возвращаем объект клиента для дальнейшего использования
-            return self.client
-        except paramiko.AuthenticationException:
-            # Выводим сообщение об ошибке аутентификации
-            print(f"Error connecting to server {self.hostname}")
-            print(paramiko.AuthenticationException.with_traceback)
-            return None
+                # Р’РѕР·РІСЂР°С‰Р°РµРј РѕР±СЉРµРєС‚ РєР»РёРµРЅС‚Р° РґР»СЏ РґР°Р»СЊРЅРµР№С€РµРіРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ
+                return self.client
+            except paramiko.AuthenticationException as e:
+                # Р’С‹РІРѕРґРёРј СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё
+                print(f"Error connecting to server {self.hostname}")
+                print(e)
+                if self.user_dialog.retry_connection():
+                    return None
 
     def close(self):
         self.client.close()
         print(f"Connection to {self.hostname} closed")
 
     def execute_command(self, command):
-        # Создаем новый канал
+        # РЎРѕР·РґР°РµРј РЅРѕРІС‹Р№ РєР°РЅР°Р»
         channel = self.client.get_transport().open_session()
 
-        # Запускаем команду
+        # Р—Р°РїСѓСЃРєР°РµРј РєРѕРјР°РЅРґСѓ
         channel.exec_command(command)
         result = channel.recv(4096).decode("utf-8")
 
-        # Ждем завершения выполнения команды
+        # Р–РґРµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹
         channel.recv_exit_status()
 
-        # Возвращаем ответ
+        # Р’РѕР·РІСЂР°С‰Р°РµРј РѕС‚РІРµС‚
         return result
 
     def execute_command_with_sudo(self, command):
-        # Создаем новый канал
+        # РЎРѕР·РґР°РµРј РЅРѕРІС‹Р№ РєР°РЅР°Р»
         channel = self.client.get_transport().open_session()
     
-        # Запускаем команду с sudo
+        # Р—Р°РїСѓСЃРєР°РµРј РєРѕРјР°РЅРґСѓ СЃ sudo
         command_with_sudo = f"echo '{self.user_dialog.sudo_password}' | sudo -S {command}"
         channel.exec_command(command_with_sudo)
 
-        # Ждем завершения выполнения команды
+        # Р–РґРµРј Р·Р°РІРµСЂС€РµРЅРёСЏ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹
         channel.recv_exit_status()
 
     def checking_changes_already_made(self, servers):
@@ -93,7 +95,7 @@ class SSHClient(object):
         self.execute_command_with_sudo(command)
 
     def change_netplan_config(self):
-        # Создаем бэкап файла
+        # РЎРѕР·РґР°РµРј Р±СЌРєР°Рї С„Р°Р№Р»Р°
         patch = "/etc/netplan/00-installer-config.yaml"
         if not self.backup_exists(patch):
             self.create_backup(patch)
@@ -104,48 +106,44 @@ class SSHClient(object):
         
         self.execute_command_with_sudo(command)
 
-        #file_manager.update_server_ip(self.hostname, new_ip, self.ip)
         self.ip = new_ip
 
     def change_hostname(self, user_dialog):
-        # Запрашиваем hostname от пользователя
+        # Р—Р°РїСЂР°С€РёРІР°РµРј hostname РѕС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         self.hostname = user_dialog.get_user_hostname(self.ip)
 
-        # Команда для изменения хостнейма
+        # РљРѕРјР°РЅРґР° РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ С…РѕСЃС‚РЅРµР№РјР°
         command = f"hostnamectl set-hostname {self.hostname}"
 
-        # Выполнение команды
+        # Р’С‹РїРѕР»РЅРµРЅРёРµ РєРѕРјР°РЅРґС‹
         self.execute_command_with_sudo(command)
 
-        # Перезагрузка для применения изменений (опционально)
-        # execute_command_with_sudo(client, "reboot")
-
     def modify_hosts_file(self, servers):
-        # Создаем бэкап файла
+        # РЎРѕР·РґР°РµРј Р±СЌРєР°Рї С„Р°Р№Р»Р°
         patch = "/etc/hosts"
         if not self.backup_exists(patch):
             self.create_backup(patch)
 
-        # Создаем блок для добавления в /etc/hosts
+        # РЎРѕР·РґР°РµРј Р±Р»РѕРє РґР»СЏ РґРѕР±Р°РІР»РµРЅРёСЏ РІ /etc/hosts
         dns_block = "#MY DNS BEGIN\n"
         for server in servers:
             if server.hostname != self.hostname:
                 dns_block += f"{server.ip} {server.hostname}.local\n"
         dns_block += "#MY DNS END\n"
 
-        # Получаем существующий блок
+        # РџРѕР»СѓС‡Р°РµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ Р±Р»РѕРє
         command = "sed -n '/#MY DNS BEGIN/,/#MY DNS END/p' /etc/hosts | grep -v '#MY DNS'"
         current_dns_block = self.execute_command(command)
 
-        # Удаляем существующий блок
+        # РЈРґР°Р»СЏРµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ Р±Р»РѕРє
         command = "sed -i '/#MY DNS BEGIN/,/#MY DNS END/d' /etc/hosts"
         self.execute_command_with_sudo(command)
 
-        # Добавляем новый блок DNS в конец файла
+        # Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Р№ Р±Р»РѕРє DNS РІ РєРѕРЅРµС† С„Р°Р№Р»Р°
         command = f"""sh -c 'echo "{dns_block}" >> /etc/hosts'"""
         self.execute_command_with_sudo(command)
 
-        # Меняем хост в /etc/hosts
+        # РњРµРЅСЏРµРј С…РѕСЃС‚ РІ /etc/hosts
         command = f"sed -i '2s/127.0.1.1 test-server-01/127.0.1.1 {self.hostname}/' /etc/hosts"
         self.execute_command_with_sudo(command)
 
@@ -164,7 +162,7 @@ class SSHClient(object):
         command = "reboot"
         self.execute_command_with_sudo(command)
 
-        timeout = 300
+        timeout = 3000
         start_time = time.time()
 
         while True:
@@ -185,8 +183,6 @@ class SSHClient(object):
 
         self.execute_command_with_sudo(command)
 
-        #self.connect_to_server()
-
     def rollback(self):
         print(f"Rollback of all changes on the server {self.hostname}")
 
@@ -204,6 +200,3 @@ class SSHClient(object):
 
         command = f"hostnamectl set-hostname {self.generate_hostname()}"
         self.execute_command_with_sudo(command)
-
-        #self.netplan_apply()
-        self.reboot_server()

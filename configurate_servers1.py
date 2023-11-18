@@ -1,19 +1,19 @@
-from SSHClient import SSHClient
+п»їfrom SSHClient import SSHClient
 from UserDialog import UserDialog
 from NetworkScanner import NetworkScanner
 from SSHClient import SSHClient
 
 if __name__ == "__main__":
-    # Запрашиваем логин и пароль, ключ или указываем, что форма входа для каждого сервера будет разная
+    # Р—Р°РїСЂР°С€РёРІР°РµРј Р»РѕРіРёРЅ Рё РїР°СЂРѕР»СЊ, РєР»СЋС‡ РёР»Рё СѓРєР°Р·С‹РІР°РµРј, С‡С‚Рѕ С„РѕСЂРјР° РІС…РѕРґР° РґР»СЏ РєР°Р¶РґРѕРіРѕ СЃРµСЂРІРµСЂР° Р±СѓРґРµС‚ СЂР°Р·РЅР°СЏ
     user_dialog = UserDialog()
     user_dialog.prompt_login_credentials()
 
-    # Сканируем сеть на наличие хостов
+    # РЎРєР°РЅРёСЂСѓРµРј СЃРµС‚СЊ РЅР° РЅР°Р»РёС‡РёРµ С…РѕСЃС‚РѕРІ
     ip = user_dialog.get_subnet_from_user()
     network_scanner = NetworkScanner(ip)
     network_servers = network_scanner.scan(user_dialog)
 
-    # Записываем экземпляры класса SSHClient в лист servers
+    # Р—Р°РїРёСЃС‹РІР°РµРј СЌРєР·РµРјРїР»СЏСЂС‹ РєР»Р°СЃСЃР° SSHClient РІ Р»РёСЃС‚ servers
     servers = []
     for server in network_servers:
         if server['ssh']:
@@ -22,7 +22,7 @@ if __name__ == "__main__":
             ssh_client.get_hostname_server()
             servers.append(ssh_client)
 
-    # Выбираем нужные сервера
+    # Р’С‹Р±РёСЂР°РµРј РЅСѓР¶РЅС‹Рµ СЃРµСЂРІРµСЂР°
     servers = user_dialog.server_selection(servers)
 
     if user_dialog.apply_changes():
@@ -32,10 +32,6 @@ if __name__ == "__main__":
         
         for server in servers:
             server.modify_hosts_file(servers)
-
-#        for server in servers:
-#            server.reboot_server()
-#            server.netplan_apply(user_dialog)
 
     if user_dialog.rollback_changes():
         for server in servers:
