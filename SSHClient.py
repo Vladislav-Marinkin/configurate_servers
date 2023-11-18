@@ -1,5 +1,8 @@
-#from typing import Self
+from asyncio import SelectorEventLoop
+from ping3 import ping, verbose_ping
 import paramiko
+import time
+import uuid
 
 from UserDialog import UserDialog
 
@@ -89,14 +92,11 @@ class SSHClient(object):
         command = f"cp {patch} {patch}.bak"
         self.execute_command_with_sudo(command)
 
-    def change_netplan_config(self, file_manager):
+    def change_netplan_config(self):
         # Создаем бэкап файла
         patch = "/etc/netplan/00-installer-config.yaml"
         if not self.backup_exists(patch):
             self.create_backup(patch)
-
-        if self.checking_changes_already_made(file_manager.servers):
-            return
 
         new_ip = self.user_dialog.enter_new_ip(self.hostname)
 
@@ -104,9 +104,13 @@ class SSHClient(object):
         
         self.execute_command_with_sudo(command)
 
-        file_manager.update_server_ip(self.hostname, new_ip, self.ip)
+        #file_manager.update_server_ip(self.hostname, new_ip, self.ip)
+        self.ip = new_ip
 
-    def change_hostname(self):
+    def change_hostname(self, user_dialog):
+        # Запрашиваем hostname от пользователя
+        self.hostname = user_dialog.get_user_hostname(self.ip)
+
         # Команда для изменения хостнейма
         command = f"hostnamectl set-hostname {self.hostname}"
 
@@ -125,14 +129,13 @@ class SSHClient(object):
         # Создаем блок для добавления в /etc/hosts
         dns_block = "#MY DNS BEGIN\n"
         for server in servers:
-            if server['hostname'] != self.hostname:
-                dns_block += f"{server['ip_address']} {server['hostname']}.local\n"
+            if server.hostname != self.hostname:
+                dns_block += f"{server.ip} {server.hostname}.local\n"
         dns_block += "#MY DNS END\n"
 
         # Получаем существующий блок
         command = "sed -n '/#MY DNS BEGIN/,/#MY DNS END/p' /etc/hosts | grep -v '#MY DNS'"
         current_dns_block = self.execute_command(command)
-        print(current_dns_block)
 
         # Удаляем существующий блок
         command = "sed -i '/#MY DNS BEGIN/,/#MY DNS END/d' /etc/hosts"
@@ -149,3 +152,58 @@ class SSHClient(object):
     def get_hostname_server(self):
         command = "hostname"
         self.hostname = self.execute_command(command).strip()
+
+    def generate_hostname(self):
+        prefix="server"
+        unique_id = str(uuid.uuid4())[:8]
+        return f"{prefix}-{unique_id}"
+
+    def reboot_server(self):
+        print("Rebooting the server...")
+
+        command = "reboot"
+        self.execute_command_with_sudo(command)
+
+        timeout = 300
+        start_time = time.time()
+
+        while True:
+            response = ping(self.ip)
+            if response is not None:
+                print(f"Server is online. Ping response time: {response} ms.")
+                break
+
+            elapsed_time = time.time() - start_time
+            if elapsed_time >= timeout:
+                print("Timeout: Server did not come online within the specified time.")
+                break
+
+            time.sleep(5)
+
+    def netplan_apply(self, user_dialog):
+        command = "netpalan apply"
+
+        self.execute_command_with_sudo(command)
+
+        #self.connect_to_server()
+
+    def rollback(self):
+        print(f"Rollback of all changes on the server {self.hostname}")
+
+        command = "rm -f /etc/netplan/00-installer-config.yaml"
+        self.execute_command_with_sudo(command)
+
+        command = "mv /etc/netplan/00-installer-config.yaml.bak /etc/netplan/00-installer-config.yaml"
+        self.execute_command_with_sudo(command)
+
+        command = "rm -f /etc/hosts"
+        self.execute_command_with_sudo(command)
+
+        command = "mv /etc/hosts.bak /etc/hosts"
+        self.execute_command_with_sudo(command)
+
+        command = f"hostnamectl set-hostname {self.generate_hostname()}"
+        self.execute_command_with_sudo(command)
+
+        #self.netplan_apply()
+        self.reboot_server()

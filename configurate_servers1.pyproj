@@ -23,13 +23,8 @@
   <ItemGroup>
     <Compile Include="configurate_servers1.py" />
     <Compile Include="NetworkScanner.py" />
-    <Compile Include="RollbackManager.py" />
-    <Compile Include="ServerFileManager.py" />
     <Compile Include="SSHClient.py" />
     <Compile Include="UserDialog.py" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="servers_ip_adresses.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

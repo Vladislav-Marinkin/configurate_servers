@@ -1,16 +1,9 @@
-import threading
-import time
-
-from ServerFileManager import ServerFileManager
 from SSHClient import SSHClient
 from UserDialog import UserDialog
 from NetworkScanner import NetworkScanner
+from SSHClient import SSHClient
 
 if __name__ == "__main__":
-    # Создаем экземпляр класса ServerFileManager
-    file_manager = ServerFileManager("servers_ip_adresses.ini")
-    file_manager.read_server_data()
-
     # Запрашиваем логин и пароль, ключ или указываем, что форма входа для каждого сервера будет разная
     user_dialog = UserDialog()
     user_dialog.prompt_login_credentials()
@@ -18,11 +11,10 @@ if __name__ == "__main__":
     # Сканируем сеть на наличие хостов
     ip = user_dialog.get_subnet_from_user()
     network_scanner = NetworkScanner(ip)
-    network_servers = network_scanner.scan()
+    network_servers = network_scanner.scan(user_dialog)
 
     # Записываем экземпляры класса SSHClient в лист servers
     servers = []
-    #for server in file_manager.servers:
     for server in network_servers:
         if server['ssh']:
             ssh_client = SSHClient(server['ip'], user_dialog)
@@ -31,12 +23,27 @@ if __name__ == "__main__":
             servers.append(ssh_client)
 
     # Выбираем нужные сервера
-    user_dialog.server_selection(servers)
+    servers = user_dialog.server_selection(servers)
 
-#    for server in servers:
-#        server.change_netplan_config(file_manager)
-#        server.change_hostname()
-#        server.modify_hosts_file(file_manager.servers)
+    if user_dialog.apply_changes():
+        for server in servers:
+            server.change_netplan_config()
+            server.change_hostname(user_dialog)
+        
+        for server in servers:
+            server.modify_hosts_file(servers)
+
+#        for server in servers:
+#            server.reboot_server()
+#            server.netplan_apply(user_dialog)
+
+    if user_dialog.rollback_changes():
+        for server in servers:
+            server.rollback()
+
+    if user_dialog.reboot_server():
+        for server in servers:
+            server.reboot_server()
 
     for server in servers:
         server.close()
