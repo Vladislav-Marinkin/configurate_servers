@@ -26,12 +26,17 @@ if __name__ == "__main__":
     servers = user_dialog.server_selection(servers)
 
     if user_dialog.apply_changes():
-        for server in servers:
-            server.change_netplan_config()
-            server.change_hostname(user_dialog)
-        
-        for server in servers:
-            server.modify_hosts_file(servers)
+        if user_dialog.change_netplan_config():
+            for server in servers:
+                server.change_netplan_config()
+
+        if user_dialog.change_hostname():
+            for server in servers:
+                server.change_hostname(user_dialog)
+
+        if user_dialog.modify_hosts_file():
+            for server in servers:
+                server.modify_hosts_file(servers)
 
     if user_dialog.rollback_changes():
         for server in servers:

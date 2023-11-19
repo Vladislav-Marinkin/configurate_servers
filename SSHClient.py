@@ -162,7 +162,10 @@ class SSHClient(object):
         command = "reboot"
         self.execute_command_with_sudo(command)
 
-        timeout = 3000
+        self.close()
+        self.connect_to_server()
+
+        timeout = 300
         start_time = time.time()
 
         while True:

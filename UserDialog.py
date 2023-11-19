@@ -150,3 +150,21 @@ class UserDialog(object):
             return True
         else:
             return False
+
+    def change_netplan_config(self):
+        if self.check_yes_no("Do you want to change netplan config? (yes/no): "):
+            return True
+        else:
+            return False
+
+    def change_hostname(self):
+        if self.check_yes_no("Do you want to change hostname? (yes/no): "):
+            return True
+        else:
+            return False
+
+    def modify_hosts_file(self):
+        if self.check_yes_no("Do you want to change hosts file? (yes/no): "):
+            return True
+        else:
+            return False
