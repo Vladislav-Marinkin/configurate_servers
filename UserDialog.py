@@ -51,7 +51,10 @@ class UserDialog(object):
                         self.sudo_password = getpass.getpass("Superuser password: ")
                         break
         else:
-            self.key_path = input("Path to private key file: ")
+            self.key_filename = input("Path to private key file: ")
+            self.username = input("Username: ")
+            self.sudo_password = getpass.getpass("Superuser password: ")
+
 
     def validate_ip(self, ip_address):
         try:

@@ -144,7 +144,7 @@ class SSHClient(object):
         self.execute_command_with_sudo(command)
 
         # Меняем хост в /etc/hosts
-        command = f"sed -i '2s/127.0.1.1 test-server-01/127.0.1.1 {self.hostname}/' /etc/hosts"
+        command = f"sed -i '2c\\127.0.1.1 {self.hostname}' /etc/hosts"
         self.execute_command_with_sudo(command)
 
     def get_hostname_server(self):
@@ -161,9 +161,6 @@ class SSHClient(object):
 
         command = "reboot"
         self.execute_command_with_sudo(command)
-
-        self.close()
-        self.connect_to_server()
 
         timeout = 300
         start_time = time.time()
@@ -199,7 +196,4 @@ class SSHClient(object):
         self.execute_command_with_sudo(command)
 
         command = "mv /etc/hosts.bak /etc/hosts"
-        self.execute_command_with_sudo(command)
-
-        command = f"hostnamectl set-hostname {self.generate_hostname()}"
         self.execute_command_with_sudo(command)
