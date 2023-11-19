@@ -25,6 +25,7 @@ if __name__ == "__main__":
     # Выбираем нужные сервера
     servers = user_dialog.server_selection(servers)
 
+    # Производим изменения на серверах
     if user_dialog.apply_changes():
         if user_dialog.change_netplan_config():
             for server in servers:
@@ -38,13 +39,16 @@ if __name__ == "__main__":
             for server in servers:
                 server.modify_hosts_file(servers)
 
+    # Откат серверов
     if user_dialog.rollback_changes():
         for server in servers:
             server.rollback()
 
+    # Перезагрузка серверов
     if user_dialog.reboot_server():
         for server in servers:
             server.reboot_server()
 
+    # Закрываем все соединения
     for server in servers:
         server.close()
