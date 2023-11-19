@@ -144,7 +144,7 @@ class SSHClient(object):
         self.execute_command_with_sudo(command)
 
         # Меняем хост в /etc/hosts
-        command = f"sed -i '2c\\127.0.1.1 {self.hostname}' /etc/hosts"
+        command = f"sed -i '2c\\127.0.1.1 {self.hostname}.local' /etc/hosts"
         self.execute_command_with_sudo(command)
 
     def get_hostname_server(self):
