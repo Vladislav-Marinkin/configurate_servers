@@ -14,6 +14,7 @@ if __name__ == "__main__":
     else:
         user_dialog.username = arg_parse.login
         user_dialog.password = arg_parse.password
+        user_dialog.sudo_password = arg_parse.password
         ip = arg_parse.subnet
         
     # Сканируем сеть на наличие хостов
