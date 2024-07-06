@@ -2,16 +2,23 @@
 from UserDialog import UserDialog
 from NetworkScanner import NetworkScanner
 from SSHClient import SSHClient
+from ARGParse import ARGParse
 
 if __name__ == "__main__":
-    # Запрашиваем логин и пароль, ключ или указываем, что форма входа для каждого сервера будет разная
-    user_dialog = UserDialog()
-    user_dialog.prompt_login_credentials()
+    arg_parse = ARGParse()
+    if not arg_parse.parse():
+        # Запрашиваем логин и пароль, ключ или указываем, что форма входа для каждого сервера будет разная
+        user_dialog = UserDialog()
+        user_dialog.prompt_login_credentials()
 
-    # Сканируем сеть на наличие хостов
-    ip = user_dialog.get_subnet_from_user()
-    network_scanner = NetworkScanner(ip)
-    network_servers = network_scanner.scan(user_dialog)
+        # Сканируем сеть на наличие хостов
+        ip = user_dialog.get_subnet_from_user()
+        network_scanner = NetworkScanner(ip)
+        network_servers = network_scanner.scan(user_dialog)
+    else:
+        login = arg_parse.login
+        password = arg_parse.password
+        ip = arg_parse.subnet
 
     # Записываем экземпляры класса SSHClient в лист servers
     servers = []
