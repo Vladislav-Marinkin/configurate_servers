@@ -16,8 +16,8 @@ class UserDialog(object):
     def check_yes_no(self, answer):
         while True:
             use_login_password = input(answer).lower()
-            if use_login_password in ('yes', 'no'):
-                if use_login_password == 'yes':
+            if use_login_password in ('yes', 'no') or ('y', 'n'):
+                if use_login_password == 'yes' or 'y':
                     return True
                 else:
                     return False
@@ -122,6 +122,13 @@ class UserDialog(object):
             server.close()
 
         return selected_servers
+    
+    def print_server(self, ip, mac, ssh_open):
+        print(f"New host found: {ip}, {mac}, SSH open: {ssh_open}")
+        
+    def print_server_list(self, client_list):
+        for server in client_list:
+            print(f"{server['ip']}, {server['mac']}, SSH open: {server['ssh']}")
 
     def rollback_changes(self):
         if self.check_yes_no("Do you want to roll back all changes? (yes/no): "):

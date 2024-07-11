@@ -25,10 +25,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="configurate_servers1.py" />
+    <Compile Include="MainMenu.py" />
+    <Compile Include="Menu.py" />
     <Compile Include="NetworkScanner.py" />
     <Compile Include="SSHClient.py" />
     <Compile Include="UserDialog.py" />
     <Compile Include="ARGParse.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="settings.ini" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

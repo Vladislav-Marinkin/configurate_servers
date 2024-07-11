@@ -4,12 +4,14 @@ class ARGParse(object):
     def __init__(self):
         self.login = None
         self.password = None
+        self.sudo_password = None
         self.subnet = None
         
     def parse(self):
         parser = argparse.ArgumentParser(description='Script for managing servers over SSH.')
         parser.add_argument('-l', '--login', type=str, help='SSH login username')
         parser.add_argument('-p', '--password', type=str, help='SSH login password')
+        parser.add_argument('-sp', '--sudo_password', type=str, help='SSH login sudo password')
         parser.add_argument('-s', '--subnet', type=str, help='Subnet to scan for servers (e.g., 192.168.1.0/24)')
 
         args = parser.parse_args()
@@ -20,6 +22,10 @@ class ARGParse(object):
         if args.login and args.password and args.subnet:
             self.login = args.login
             self.password = args.password
+            if not args.sudo_password:
+                self.sudo_password = args.password
+            else:
+                self.sudo_password = args.sudo_password
             self.subnet = args.subnet
             return True
         else:
